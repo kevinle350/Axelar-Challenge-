@@ -309,7 +309,7 @@ describe("Game Contract", function () {
                 await expect(gameContract.connect(addr1).makeMove(1, 0, 0)).to.be.revertedWith('Game is already over');
             })
 
-            it.only("Should fail since coordinate is taken", async function () {
+            it("Should fail since coordinate is taken", async function () {
                 const count = await gameContract.getCount();
                 expect(count).to.equal(0)
 

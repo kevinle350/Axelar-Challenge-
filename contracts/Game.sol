@@ -248,13 +248,4 @@ contract Game {
     function getGames(uint i) external view returns(GameState memory) {
         return gameIds[i];
     }
-
-    function getStarter(uint i) external view returns(Players) {
-        GameState storage game = gameIds[i];
-        return game.started;
-    }
-
-    function getConcac(string memory _key1, string memory _key2) external pure returns (bytes memory) {
-        return abi.encodePacked(_key1, _key2);
-    }
 }
