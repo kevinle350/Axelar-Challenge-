@@ -47,21 +47,19 @@ contract Game {
     mapping(uint256 => GameState) private gameIds; 
 
     // Create open game
-    function openGame() public returns (uint256) {
+    function openGame() public {
         GameState memory game; 
         game.Player1 = msg.sender;
         game.playerCount = 1;   
         totGames += 1; 
         gameIds[totGames] = game;
-
-        return totGames;
     }
 
     // Accept game invitation aka start to a game
-    function acceptGame(uint256 _gameId) public returns (bool) {
+    function acceptGame(uint256 _gameId) public {
         require(_gameId <= totGames, "Game is not initiated");
         GameState storage game = gameIds[_gameId];
-        require(game.playerCount == 1, "Game is not initiated");
+        require(game.playerCount == 1, "Game already in progress");
 
         game.Player2 = msg.sender;
         game.playerCount = 2;
@@ -77,8 +75,6 @@ contract Game {
             game.current = game.Player1;    // address of P1
         }
         game.next = Players.X;    
-
-        return true;
     }
 
     /*
@@ -88,10 +84,9 @@ contract Game {
         - Contract caller has right of turn
         - Unmarked coordinates
     */
-    function makeMove(uint256 _gameId, uint256 _x, uint256 _y) public returns (bool) {
+    function makeMove(uint256 _gameId, uint256 _x, uint256 _y) public {
         require(_gameId <= totGames, "Game is not initiated");
-        require(_x >= 0 && _x < 3, "x coordiated is out of bounds");
-        require(_y >= 0 && _y < 3, "y coordiated is out of bounds");
+        require(_x >= 0 && _x < 3 || _y >= 0 && _y < 3, "Out of bounds coordinates");
         GameState storage game = gameIds[_gameId];
         require(game.current == msg.sender, "Not your turn");
         require(game.winner == Winners.None, "Game is already over");
@@ -100,9 +95,8 @@ contract Game {
         game.board[_x][_y] = game.next; 
 
         Winners winner = checkWinner(game.board, game.started); 
-        if (game.winner == Winners.Player1 || game.winner == Winners.Player2 || game.winner == Winners.Draw) {
-            game.winner = winner;
-            return true;
+        if (winner == Winners.Player1 || winner == Winners.Player2 || winner == Winners.Draw) {
+            game.winner = winner;   
         } 
 
         if (game.next == Players.X) {
@@ -111,7 +105,11 @@ contract Game {
             game.next = Players.X;
         }
 
-        return true;
+        if (msg.sender == game.Player1) {
+            game.current = game.Player2;
+        } else {
+            game.current = game.Player1;
+        }
     }
 
     function checkWinner(Players[3][3] memory _board, Players _started) private pure returns (Winners winner) {
@@ -119,16 +117,14 @@ contract Game {
         if (player == Players.X) {
             if (_started == Players.Player1) {
                 return Winners.Player1;
-            } 
-            if (_started == Players.Player2) {
+            } else {
                 return Winners.Player2;
             }
         }
         if (player == Players.O) {
             if (_started == Players.Player1) {
                 return Winners.Player2;
-            } 
-            if (_started == Players.Player2) {
+            } else {
                 return Winners.Player1;
             }
         } 
@@ -136,10 +132,10 @@ contract Game {
         player = checkCol(_board);  
         if (player == Players.X) {
             if (_started == Players.Player1) {
-                return Winners.Player2;
+                return Winners.Player1;
             } 
             if (_started == Players.Player2) {
-                return Winners.Player1;
+                return Winners.Player2;
             }
         }
         if (player == Players.O) {
@@ -154,10 +150,10 @@ contract Game {
         player = checkDiagonal(_board);  
         if (player == Players.X) {
             if (_started == Players.Player1) {
-                return Winners.Player2;
+                return Winners.Player1;
             } 
             if (_started == Players.Player2) {
-                return Winners.Player1;
+                return Winners.Player2;
             }
         }
         if (player == Players.O) {
@@ -213,8 +209,8 @@ contract Game {
 
     function checkCol(Players[3][3] memory _board) private pure returns (Players) {
         for (uint i = 0; i < 3; i++) {
-            if (_board[i][0] != Players.None && _board[i][0] == _board[i][1] && _board[i][0] == _board[i][2]) {
-                return _board[i][0];
+            if (_board[0][i] != Players.None && _board[0][i] == _board[1][i] && _board[0][i] == _board[2][i]) {
+                return _board[0][i];
             }
         }
 
@@ -257,5 +253,8 @@ contract Game {
         GameState storage game = gameIds[i];
         return game.started;
     }
-    
+
+    function getConcac(string memory _key1, string memory _key2) external pure returns (bytes memory) {
+        return abi.encodePacked(_key1, _key2);
+    }
 }
