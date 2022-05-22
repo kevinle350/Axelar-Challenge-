@@ -13,9 +13,16 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
+const RINKEBY_PRIVATE_KEY = "KEY";
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
   solidity: "0.8.4",
+  networks: {
+    rinkeby: {
+      url: `https://eth-rinkeby.alchemyapi.io/v2/HayCNeIoF8v6SiALcRulPjj5GPptXpSz`,
+      accounts: [`${RINKEBY_PRIVATE_KEY}`]
+    }
+  }
 };
